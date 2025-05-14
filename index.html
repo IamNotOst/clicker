@@ -1,101 +1,306 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>ComsicClicker</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>CPS Tester</title>
   <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      touch-action: manipulation;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
     :root {
-      --bg: #0d0f14;
-      --fg: #e0e8f8;
-      --accent: #7f8cf4;
-      --glow: rgba(127, 140, 244, 0.6);
+      --bg-dark: linear-gradient(to right, #1f1c2c, #928dab);
+      --bg-light: linear-gradient(to right, #f0f0f0, #dcdcdc);
+      --text-dark: white;
+      --text-light: #222;
+      --primary-dark: #e74c3c;
+      --primary-light: #3498db;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); font-family: 'Segoe UI', sans-serif; }
-    .container { display: flex; flex-direction: column; height: 100vh; }
-    nav { display: flex; justify-content: space-around; background: #13151b; box-shadow: 0 0 20px var(--glow); }
-    nav button { flex:1; padding: 10px; background: transparent; border:none; color: var(--fg); font-size: 1rem; cursor: pointer; transition: background .3s; }
-    nav button.active, nav button:hover { background: var(--accent); }
-    main { flex:1; padding:15px; overflow-y: auto; }
-    .hidden { display: none; }
-    .clicker { display: flex; flex-direction: column; align-items:center; justify-content:center; height:100%; }
-    .click-btn { width: 150px; height: 150px; border-radius: 50%; background: var(--accent); border: none; box-shadow: 0 0 30px var(--glow); font-size: 2rem; color: var(--bg); cursor: pointer; transition: transform .2s, box-shadow .2s;
-                animation: pulse 2s infinite ease-in-out;
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      transition: background 0.5s, color 0.5s;
     }
-    .click-btn:active { transform: scale(0.95); box-shadow: 0 0 10px var(--glow); }
-    @keyframes pulse { 0%,100% { box-shadow:0 0 30px var(--glow);}50%{box-shadow:0 0 15px var(--glow);} }
-    .stats { margin-top:20px; font-size:1.2rem; text-align:center; }
-    .shop, .promo, .leaderboard { display: flex; flex-direction: column; gap:10px; }
-    .item { display:flex; justify-content: space-between; padding:10px; background: #13151b; border-radius:8px; box-shadow:0 0 10px var(--glow); transition:transform .2s; }
-    .item:hover { transform: scale(1.02); }
-    /* Responsive */
-    @media (max-width: 320px) { .click-btn { width:120px; height:120px; font-size:1.5rem; } }
+
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+      transition: background 0.5s;
+    }
+
+    body.light .container {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #timer {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+
+    #clickBtn {
+      background-color: var(--primary-dark);
+      color: white;
+      font-size: 24px;
+      padding: 20px 40px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+
+    body.light #clickBtn {
+      background-color: var(--primary-light);
+    }
+
+    #clickBtn:hover {
+      filter: brightness(90%);
+    }
+
+    .switcher {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .switcher button {
+      padding: 10px 15px;
+      font-size: 14px;
+      border: none;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      color: inherit;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .switcher button.active {
+      background: #2ecc71;
+      transform: scale(1.1);
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #startBtn {
+      margin-top: 20px;
+      background-color: #2980b9;
+      border: none;
+      color: white;
+      font-size: 18px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    body.light #startBtn {
+      background-color: #2471a3;
+    }
+
+    #startBtn:hover {
+      filter: brightness(90%);
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .toggle {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      color: inherit;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .toggle:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <nav>
-      <button data-tab="play" class="active">Play</button>
-      <button data-tab="shop">Shop</button>
-      <button data-tab="promo">Promo</button>
-      <button data-tab="leaderboard">Top 10</button>
-    </nav>
-    <main>
-      <section id="play" class="clicker">
-        <button id="clickBtn" class="click-btn">+1</button>
-        <div class="stats">
-          <div>Points: <span id="points">0</span></div>
-          <div>Click Value: <span id="perClick">1</span></div>
-          <div id="bonusTimer"></div>
-        </div>
-      </section>
-      <section id="shop" class="shop hidden"></section>
-      <section id="promo" class="promo hidden">
-        <input type="text" id="promoInput" placeholder="Enter code" style="padding:8px;border-radius:5px;border:none;outline:none;width:100%;margin-bottom:10px;">
-        <button id="promoBtn" style="padding:10px;border:none;border-radius:5px;background:var(--accent);color:var(--bg);cursor:pointer;">Activate</button>
-        <div id="promoMsg" style="margin-top:10px"></div>
-      </section>
-      <section id="leaderboard" class="leaderboard hidden"></section>
-    </main>
+  <div class="top-bar">
+    <button class="toggle" id="themeToggle">Светлая тема</button>
+    <button class="toggle" id="langToggle">English</button>
   </div>
+
+  <div class="container">
+    <h1 id="title">Тест на CPS</h1>
+    <p id="timer">Выбери время и нажми "Начать"</p>
+    <button id="clickBtn" disabled>КЛИКАЙ!</button>
+    <p id="score">Клики: 0</p>
+    <p id="result"></p>
+    <button id="startBtn">Начать</button>
+
+    <div class="switcher">
+      <button class="time-btn active" data-time="1">1 сек</button>
+      <button class="time-btn" data-time="10">10 сек</button>
+      <button class="time-btn" data-time="60">1 мин</button>
+    </div>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-  // State & Storage
-  const state = {points:0, perClick:1, clicks:0, superActive:false};
-  const promoCodes = { COSMIC100:1000, BOOST: state.points + 500 };
-  const usedPromo = {};
-  let leaderboard = JSON.parse(localStorage.getItem('leader'))||[];
-  function save() { localStorage.setItem('cosmic', JSON.stringify(state)); localStorage.setItem('leader', JSON.stringify(leaderboard)); }
-  function load() { Object.assign(state, JSON.parse(localStorage.getItem('cosmic'))||{}); updateStats(); }
-  load();
-  // Tabs
-  document.querySelectorAll('nav button').forEach(btn=>btn.onclick=()=>{
-    document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
-    document.getElementById(btn.dataset.tab).classList.remove('hidden');
-    document.querySelector('nav button.active').classList.remove('active');
-    btn.classList.add('active');
-    if(btn.dataset.tab==='shop') renderShop();
-    if(btn.dataset.tab==='leaderboard') renderLeader();
-  });
-  // Click
-  document.getElementById('clickBtn').onclick=()=>{
-    state.points += state.perClick; state.clicks++; updateStats(); animateClick(); save();
-  };
-  function updateStats(){ document.getElementById('points').innerText=state.points; document.getElementById('perClick').innerText=state.perClick; }
-  function animateClick(){ const c=document.createElement('div'); c.innerText='+'+state.perClick; Object.assign(c.style,{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',color:var('--accent'),pointerEvents:'none',transition:'opacity 1s, transform 1s'}); document.body.append(c); setTimeout(()=>{c.style.opacity=0; c.style.transform='translate(-50%,-150%)';},50); setTimeout(()=>c.remove(),1050); }
-  // Shop
-  const shopItems=[{name:'Power+', get cost(){return state.perClick*100}, action:()=>{ state.perClick++; }}, {name:'SuperClick x2', cost:2000, action:activateSuper}];
-  function renderShop(){ const shop=document.getElementById('shop'); shop.innerHTML=''; shopItems.forEach((i,idx)=>{ const el=document.createElement('div'); el.className='item'; el.innerHTML=`<span>${i.name}</span><span>${i.cost} pts</span>`; el.onclick=()=>{ if(state.points>=i.cost){ state.points-=i.cost; i.action(); save(); renderShop(); updateStats(); } }; shop.append(el);}); }
-  // Super
-  let timerId;
-  function activateSuper(){ if(state.superActive) return; state.superActive=true; state.perClick*=2; let t=15; showTimer(t); timerId=setInterval(()=>{ if(--t<=0){ clearInterval(timerId); state.superActive=false; state.perClick/=2; document.getElementById('bonusTimer').innerText=''; updateStats(); save(); } else showTimer(t); },1000); }
-  function showTimer(t){ document.getElementById('bonusTimer').innerText='Super x2: '+t+'s'; }
-  // Promo
-  document.getElementById('promoBtn').onclick=()=>{ const code=document.getElementById('promoInput').value.trim().toUpperCase(); const msg=document.getElementById('promoMsg'); if(!promoCodes[code]) msg.innerText='Code not found'; else if(usedPromo[code]) msg.innerText='Already used'; else{ state.points=promoCodes[code]; usedPromo[code]=true; save(); updateStats(); msg.innerText='Activated!'} };
-  // Leaderboard
-  function renderLeader(){ const lb=document.getElementById('leaderboard'); lb.innerHTML=''; const entry={pts:state.points, clicks:state.clicks}; leaderboard.push(entry); leaderboard.sort((a,b)=>b.pts-a.pts); leaderboard=leaderboard.slice(0,10); leaderboard.forEach((e,i)=>{ const r=document.createElement('div'); r.className='item'; r.innerHTML=`<span>#${i+1}</span><span>${e.pts} pts / ${e.clicks} clicks</span>`; lb.append(r); }); save(); }
-  // Telegram init
-  Telegram.WebApp.ready();
+    let score = 0;
+    let selectedTime = 1;
+    let timer;
+    let timeLeft = selectedTime;
+    let language = 'ru';
+    let isDark = true;
+
+    const texts = {
+      ru: {
+        title: "Тест на CPS",
+        choose: 'Выбери время и нажми "Начать"',
+        clicks: "Клики",
+        start: "Начать",
+        click: "КЛИКАЙ!",
+        sec: "сек",
+        min: "1 мин",
+        cps: "Твой CPS",
+        result: "Ты сделал {score} кликов за {time} сек.\nCPS: {cps}",
+        light: "Светлая тема",
+        dark: "Тёмная тема",
+        eng: "English",
+        rus: "Русский"
+      },
+      en: {
+        title: "CPS Test",
+        choose: 'Choose time and click "Start"',
+        clicks: "Clicks",
+        start: "Start",
+        click: "CLICK!",
+        sec: "sec",
+        min: "1 min",
+        cps: "Your CPS",
+        result: "You made {score} clicks in {time} sec.\nCPS: {cps}",
+        light: "Light Theme",
+        dark: "Dark Theme",
+        eng: "English",
+        rus: "Русский"
+      }
+    };
+
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const clickBtn = document.getElementById('clickBtn');
+    const startBtn = document.getElementById('startBtn');
+    const resultDisplay = document.getElementById('result');
+    const timeButtons = document.querySelectorAll('.time-btn');
+    const title = document.getElementById('title');
+    const themeToggle = document.getElementById('themeToggle');
+    const langToggle = document.getElementById('langToggle');
+
+    function setTexts() {
+      const t = texts[language];
+      title.textContent = t.title;
+      timerDisplay.textContent = t.choose;
+      clickBtn.textContent = t.click;
+      startBtn.textContent = t.start;
+      scoreDisplay.textContent = `${t.clicks}: 0`;
+      timeButtons[0].textContent = `1 ${t.sec}`;
+      timeButtons[1].textContent = `10 ${t.sec}`;
+      timeButtons[2].textContent = t.min;
+      themeToggle.textContent = isDark ? t.light : t.dark;
+      langToggle.textContent = language === 'ru' ? t.eng : t.rus;
+    }
+
+    timeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        timeButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedTime = parseInt(btn.dataset.time);
+        timerDisplay.textContent = texts[language].choose;
+      });
+    });
+
+    clickBtn.addEventListener('click', () => {
+      score++;
+      scoreDisplay.textContent = `${texts[language].clicks}: ${score}`;
+    });
+
+    startBtn.addEventListener('click', () => {
+      score = 0;
+      timeLeft = selectedTime;
+      scoreDisplay.textContent = `${texts[language].clicks}: 0`;
+      resultDisplay.textContent = '';
+      clickBtn.disabled = false;
+      startBtn.disabled = true;
+      timerDisplay.textContent = `Осталось: ${timeLeft} сек`;
+
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `${texts[language].choose} (${timeLeft}s)`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          clickBtn.disabled = true;
+          startBtn.disabled = false;
+          const cps = (score / selectedTime).toFixed(3);
+          resultDisplay.textContent = `${texts[language].cps}: ${cps}`;
+          const msg = texts[language].result
+            .replace("{score}", score)
+            .replace("{time}", selectedTime)
+            .replace("{cps}", cps);
+          Telegram.WebApp.showPopup({
+            title: texts[language].cps,
+            message: msg,
+            buttons: [{ id: 'ok', type: 'default', text: 'OK' }]
+          });
+        }
+      }, 1000);
+    });
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      isDark = !isDark;
+      setTexts();
+    });
+
+    langToggle.addEventListener('click', () => {
+      language = language === 'ru' ? 'en' : 'ru';
+      setTexts();
+    });
+
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+    setTexts();
   </script>
 </body>
 </html>
